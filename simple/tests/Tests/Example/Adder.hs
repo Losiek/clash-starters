@@ -20,8 +20,7 @@ prop_adder :: H.Property
 prop_adder = H.property $ do
 
     -- Simulate for a random duration between 1 and 100 cycles
-    -- simDuration <- H.forAll (Gen.integral (Range.linear 1 100))
-    simDuration <- H.forAll (Gen.integral (Range.linear 5 5))
+    simDuration <- H.forAll (Gen.integral (Range.linear 1 100))
 
     -- Generate a list of random unsigned numbers
     inp_a <- H.forAll
@@ -40,7 +39,8 @@ prop_adder = H.property $ do
                                             C.enableGen
                                             (C.fromList inp_a)
                                             (C.fromList inp_b))
-        expected = 0 : zipWith (+) inp_a inp_b
+        -- We need to remove one value because of resetGen
+        expected = 0 : 0 : zipWith (+) (tail inp_a) (tail inp_b)
 
     -- Check that the simulated output matches the expected output
     simOut H.=== expected
