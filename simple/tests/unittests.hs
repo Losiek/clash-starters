@@ -7,5 +7,6 @@ import qualified Tests.Example.Adder
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Tests.Example.Project.accumTests
+  [ Tests.Example.Project.accumTests,
+    Tests.Example.Adder.adderTests
   ]

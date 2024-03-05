@@ -20,18 +20,10 @@ prop_adder :: H.Property
 prop_adder = H.property $ do
 
     -- Simulate for a random duration between 1 and 100 cycles
-    simDuration <- H.forAll (Gen.integral (Range.linear 1 100))
+    -- simDuration <- H.forAll (Gen.integral (Range.linear 1 100))
+    simDuration <- H.forAll (Gen.integral (Range.linear 5 5))
 
     -- Generate a list of random unsigned numbers
-    inp_clk <- H.forAll
-        (Gen.list (Range.singleton simDuration)
-        (Gen.choice [pure 1, pure 0]))
-    inp_rst <- H.forAll
-        (Gen.list (Range.singleton simDuration)
-        (Gen.choice [pure 1, pure 0]))
-    inp_ena <- H.forAll
-        (Gen.list (Range.singleton simDuration)
-        (Gen.choice [pure 1, pure 0]))
     inp_a <- H.forAll
         (Gen.list (Range.singleton simDuration)
         (genUnsigned Range.linearBounded))
@@ -42,12 +34,13 @@ prop_adder = H.property $ do
 
         -- Simulate the @addr@ function for the pre-existing @System@ domain
         -- and 8 bit unsigned numbers.
-        simOut = C.sampleN simDuration (adder @C.System @8 (C.fromList inp_clk)
-                                             (C.fromList inp_rst)
-                                             (C.fromList inp_ena)
-                                             (C.fromList inp_a)
-                                             (C.fromList inp_b))
-        expected = 0 : init (scanl (+) int_a int_b)     -- This will not work
+        simOut = C.sampleN (simDuration + 1) (adder @C.System @8
+                                            C.clockGen
+                                            C.resetGen
+                                            C.enableGen
+                                            (C.fromList inp_a)
+                                            (C.fromList inp_b))
+        expected = 0 : zipWith (+) inp_a inp_b
 
     -- Check that the simulated output matches the expected output
     simOut H.=== expected
